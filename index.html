@@ -3,10 +3,122 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Document</title>
+    <title>Movie Recommendation System</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f4f4f4;
+            margin: 0;
+            padding: 0;
+        }
+        .container {
+            width: 80%;
+            margin: 0 auto;
+            text-align: center;
+            padding: 20px;
+        }
+        h1 {
+            color: #333;
+        }
+        select, button {
+            padding: 10px;
+            margin: 10px;
+            font-size: 16px;
+        }
+        .movie-grid {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 20px;
+            justify-content: center;
+        }
+        .movie {
+            width: 150px;
+            text-align: center;
+        }
+        img {
+            width: 100%;
+            border-radius: 8px;
+        }
+    </style>
 </head>
-<body>
-    <h1>home</h1>
-    <h2>home</h2>
+<body onload="loadMovies()">
+    <div class="container">
+        <h1>Movie Recommendation System</h1>
+        <select id="movieSelect">
+            <option value="Inception">Inception</option>
+            <option value="Interstellar">Interstellar</option>
+            <option value="The Dark Knight">The Dark Knight</option>
+            <option value="Titanic">Titanic</option>
+            <option value="Avatar">Avatar</option>
+        </select>
+        <button onclick="getRecommendations()">Recommend</button>
+
+        <div class="movie-grid" id="movieGrid">
+
+        </div>
+    </div>
+
+    <script>
+        // Populate the dropdown with movies
+        const movieList = []; // Populate this with movie titles from `movie_list.pkl`
+
+        const selectElement = document.getElementById('movieSelect');
+        movieList.forEach(movie => {
+            const option = document.createElement('option');
+            option.value = movie;
+            option.textContent = movie;
+            selectElement.appendChild(option);
+        });
+        //load random movies
+        function loadMovies() {
+            const selectedMovie = selectElement.value;
+            fetch('http://127.0.0.1:5000/random_movies', {
+                method: 'GET',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ movie: selectedMovie })
+            })
+                .then(response => response.json())
+                .then(data => {
+                    const movieGrid = document.getElementById('movieGrid');
+                    movieGrid.innerHTML = ''; // Clear previous results
+                    data.forEach(movie => {
+                        const movieDiv = document.createElement('div');
+                        movieDiv.className = 'movie';
+                        movieDiv.innerHTML = `
+                            <img src="${movie.poster}" alt="${movie.name}">
+                            <p>${movie.name}</p>
+                        `;
+                        movieGrid.appendChild(movieDiv);
+                    });
+                })
+                .catch(error => console.error('Error:', error));
+        }
+
+
+        // Fetch recommendations
+        function getRecommendations() {
+            const selectedMovie = selectElement.value;
+            fetch('http://127.0.0.1:5000/recommend', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ movie: selectedMovie })
+            })
+                .then(response => response.json())
+                .then(data => {
+                    const movieGrid = document.getElementById('movieGrid');
+                    movieGrid.innerHTML = ''; // Clear previous results
+                    data.forEach(movie => {
+                        const movieDiv = document.createElement('div');
+                        movieDiv.className = 'movie';
+                        movieDiv.innerHTML = `
+                            <img src="${movie.poster}" alt="${movie.name}">
+                            <p>${movie.name}</p>
+                        `;
+                        movieGrid.appendChild(movieDiv);
+                    });
+                })
+                .catch(error => console.error('Error:', error));
+        }
+    </script>
 </body>
 </html>
